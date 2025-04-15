@@ -39,6 +39,7 @@
 
 ## Prerequisites
 - Java 21
+- Gradle
 - Docker
 - An IDE
 
@@ -57,7 +58,7 @@ gradle shadowJar
 Then copy the plugin inside the Kestra container (you can use `docker ps` to find the identifier of the Kestra container):
 
 ```shell
-docker cp build/libs/plugin-template-0.21.0-SNAPSHOT.jar <containerId>/app/plugins
+docker cp build/libs/dojo-kestra-plugin-0.22.0-SNAPSHOT.jar <containerId>:/app/plugins
 ```
 
 Finally, restart your docker compose stack so the new plugin will be discovered.
@@ -93,6 +94,27 @@ The trigger will create an execution each 60s, 50% of times.
 
 Please use the following reference documentation for creating a task: [Plugin Developer Guide - Develop a Task](https://kestra.io/docs/plugin-developer-guide/task).
 
-## Exercise 3 - Create a new trigger
+Let's create a new runnable task `io.kestra.plugin.dojo.FetchDummyJson`.
+This task will allow fetching the [Dummy JSON API](https://dummyjson.com) for a type of JSON with a limit (number of documents retrieved), then add the response as a file inside Kestra's internal storage.
 
-Please use the following reference documentation for creating a task: [Plugin Developer Guide - Develop a Triggere](https://kestra.io/docs/plugin-developer-guide/trigger).
+The task must have two attributes:
+- `jsonType`: a `String` with the type of JSON to fetch (for ex `products`)
+- `limit`: an `Integer` with a default of 10
+
+Based on these attributes, the task will compute the URL to fetch, use an HTTP client (Java HttpClient) then store the response inside an internal storage file.
+
+For storing a file, you first need to create it using `runContext.workingDir().createFile()`.
+Then to send it to the internal storage you must use `runContext.storage.putFile()`, this method returns and URI that must be used to build an output that will be returned by the task.
+
+You can use the following flow to test it:
+
+```yaml
+id: dummy-json
+namespace: io.kestra.tests
+
+tasks:
+  - id: fetch-products
+    type: io.kestra.plugin.dojo.FetchDummyJson
+    jsonType: products
+    limit: 25
+```
