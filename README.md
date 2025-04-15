@@ -33,44 +33,66 @@
 <p align="center" style="color:grey;"><i>Get started with Kestra in 4 minutes.</i></p>
 
 
-# Kestra Plugin Template
+# Dojo - Kestra plugin
 
-> A template for creating Kestra plugins
+> A coding dojo for a Kestra plugin
 
-This repository serves as a general template for creating a new [Kestra](https://github.com/kestra-io/kestra) plugin. It should take only a few minutes! Use this repository as a scaffold to ensure that you've set up the plugin correctly, including unit tests and CI/CD workflows.
-
-![Kestra orchestrator](https://kestra.io/video.gif)
-
-## Running the project in local
-### Prerequisites
+## Prerequisites
 - Java 21
 - Docker
+- An IDE
 
-### Running tests
+## Installation
+- Open the repository in your IDE
+- Make sure annotation processing is enabled in your IDE
+- Starts the docker compose stack via `docker compose up`
+
+## Build & Test
+To build the plugin, do:
+
+```shell
+gradle shadowJar
 ```
-./gradlew check --parallel
+
+Then copy the plugin inside the Kestra container (you can use `docker ps` to find the identifier of the Kestra container):
+
+```shell
+docker cp build/libs/plugin-template-0.21.0-SNAPSHOT.jar <containerId>/app/plugins
 ```
 
-### Launching the whole app
+Finally, restart your docker compose stack so the new plugin will be discovered.
+
+## Exercise 1 - Test the examples
+
+Kestra UI will be available at http://localhost:8080
+
+The plugin already contains an example task and an example trigger, you can have a look at them:
+- [Example task](/src/main/java/io/kestra/plugin/dojo/Example.java)
+- [Example trigger](/src/main/java/io/kestra/plugin/dojo/Trigger.java)
+
+To try them, in the Kestra UI, go to **Flows** then click **Create*, then paste the following flow YAML inside the editor:
+
+```yaml
+id: example
+namespace: company.team
+
+triggers:
+  - id: trigger
+    type: io.kestra.plugin.dojo.Trigger
+
+tasks:
+  - id: example
+    type: io.kestra.plugin.dojo.Example
+    format: "{{flow.id}}"
 ```
-./gradlew shadowJar && docker build -t kestra-custom . && docker run --rm -p 8080:8080 kestra-custom server local
-```
-> [!NOTE]
-> You need to relaunch this whole command everytime you make a change to your plugin
 
-go to http://localhost:8080, your plugin will be available to use
+You can execute the flow via the **Execute** button.
+The trigger will create an execution each 60s, 50% of times.
 
-## Documentation
-* Full documentation can be found under: [kestra.io/docs](https://kestra.io/docs)
-* Documentation for developing a plugin is included in the [Plugin Developer Guide](https://kestra.io/docs/plugin-developer-guide/)
+## Exercise 2 - Create a new task
 
+Please use the following reference documentation for creating a task: [Plugin Developer Guide - Develop a Task](https://kestra.io/docs/plugin-developer-guide/task).
 
-## License
-Apache 2.0 © [Kestra Technologies](https://kestra.io)
+## Exercise 3 - Create a new trigger
 
-
-## Stay up to date
-
-We release new versions every month. Give the [main repository](https://github.com/kestra-io/kestra) a star to stay up to date with the latest releases and get notified about future updates.
-
-![Star the repo](https://kestra.io/star.gif)
+Please use the following reference documentation for creating a task: [Plugin Developer Guide - Develop a Triggere](https://kestra.io/docs/plugin-developer-guide/trigger).
